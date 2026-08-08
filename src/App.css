@@ -22,7 +22,7 @@ body {
 }
 
 .calculator-container {
-  max-width: 700px;
+  max-width: 800px;
   width: 100%;
   margin: 0 auto;
   background: white;
@@ -219,6 +219,18 @@ body {
   font-family: inherit;
 }
 
+.input-group input[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+.input-group input[type="number"]::-webkit-inner-spin-button,
+.input-group input[type="number"]::-webkit-outer-spin-button {
+  opacity: 0.5;
+  height: 24px;
+  cursor: pointer;
+}
+
 .input-group input:focus {
   border-color: #667eea;
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
@@ -310,8 +322,39 @@ body {
 }
 
 /* Полировка */
-.polish-visual {
-  margin: 12px 0;
+.polish-info {
+  margin-top: 12px;
+  padding: 10px;
+  background: #e8f4f8;
+  border-radius: 8px;
+  font-size: 12px;
+  color: #2c6e5c;
+  text-align: center;
+  line-height: 1.5;
+}
+
+/* Стили для независимых секций полировки */
+.polish-sections-container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.polish-section-horizontal {
+  background: #f8f9fa;
+  border-radius: 16px;
+  padding: 16px;
+  border: 1px solid #e9ecef;
+}
+
+.polish-section-horizontal h4 {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 16px;
+  text-align: center;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #dee2e6;
 }
 
 .polish-rectangle {
@@ -323,6 +366,79 @@ body {
   gap: 12px;
 }
 
+/* Стили для кнопок - и + */
+.qty-btn {
+  width: 32px;
+  height: 32px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  background: white;
+  font-size: 18px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: inherit;
+  color: #333;
+  padding: 0;
+}
+
+.qty-btn:hover:not(:disabled) {
+  border-color: #667eea;
+  background: rgba(102, 126, 234, 0.05);
+}
+
+.qty-btn:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.qty-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* В поле с количеством теперь используются кнопки - и + */
+.extras-count {
+  margin-top: 12px;
+  padding: 12px;
+  background: #f0f2f5;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.extras-count label {
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 0;
+  font-size: 13px;
+}
+
+.extras-count .extras-input {
+  width: 60px;
+  padding: 6px 8px;
+  font-size: 14px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  outline: none;
+  font-family: inherit;
+  text-align: center;
+}
+
+.extras-count .extras-input:focus {
+  border-color: #667eea;
+}
+
+.extras-total {
+  font-weight: 600;
+  color: #e67e22;
+  font-size: 14px;
+  min-width: 60px;
+}
 .polish-side {
   background: white;
   border: 2px solid #e0e0e0;
@@ -350,6 +466,18 @@ body {
   color: white;
 }
 
+.side-length {
+  font-size: 12px;
+  font-weight: 400;
+  background: rgba(0, 0, 0, 0.1);
+  padding: 2px 8px;
+  border-radius: 20px;
+}
+
+.polish-side.active .side-length {
+  background: rgba(255, 255, 255, 0.2);
+}
+
 .polish-middle {
   display: flex;
   align-items: center;
@@ -369,6 +497,195 @@ body {
 
 .polish-side.left, .polish-side.right {
   min-width: 100px;
+}
+
+/* Стили для вертикального расположения секции (Сторона 2) */
+.polish-section-vertical {
+  background: #f8f9fa;
+  border-radius: 16px;
+  padding: 16px;
+  border: 1px solid #e9ecef;
+}
+
+.polish-section-vertical h4 {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 16px;
+  text-align: center;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.polish-vertical-layout {
+  background: #f0f2f5;
+  border-radius: 16px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.polish-vertical-top {
+  display: flex;
+  justify-content: center;
+}
+
+.polish-vertical-bottom {
+  display: flex;
+  justify-content: center;
+}
+
+.polish-side-short {
+  flex: 1;
+  max-width: 200px;
+  background: white;
+  border: 2px solid #e0e0e0;
+  border-radius: 12px;
+  padding: 10px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+  color: #333;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.polish-side-short:hover {
+  border-color: #667eea;
+  background: rgba(102, 126, 234, 0.05);
+}
+
+.polish-side-short.active {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-color: #667eea;
+  color: white;
+}
+
+.side-label {
+  font-size: 12px;
+}
+
+.side-length-short {
+  font-size: 12px;
+  font-weight: 600;
+  background: rgba(0, 0, 0, 0.1);
+  padding: 2px 8px;
+  border-radius: 20px;
+}
+
+.polish-side-short.active .side-length-short {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.polish-vertical-sides {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.polish-side-long {
+  flex: 1;
+  background: white;
+  border: 2px solid #e0e0e0;
+  border-radius: 12px;
+  padding: 20px 12px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+  color: #333;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-align: center;
+  min-width: 80px;
+}
+
+.polish-side-long:hover {
+  border-color: #667eea;
+  background: rgba(102, 126, 234, 0.05);
+}
+
+.polish-side-long.active {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-color: #667eea;
+  color: white;
+}
+
+.side-length-long {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.polish-vertical-center {
+  padding: 16px;
+  background: #e8eaee;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #666;
+  text-align: center;
+  min-width: 100px;
+}
+
+.polish-dimensions-info-vertical {
+  margin-top: 12px;
+  padding: 8px 12px;
+  background: #e8f4f8;
+  border-radius: 8px;
+  font-size: 12px;
+  color: #2c6e5c;
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  text-align: center;
+  flex-wrap: wrap;
+}
+
+.polish-dimensions-info {
+  margin-top: 12px;
+  padding: 8px 12px;
+  background: #e8f4f8;
+  border-radius: 8px;
+  font-size: 12px;
+  color: #2c6e5c;
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  text-align: center;
+}
+
+/* Компоновка для Г-образной столешницы */
+.corner-polish-layout {
+  display: flex;
+  flex-direction: row;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.corner-polish-layout > * {
+  flex: 1;
+  min-width: 280px;
+}
+
+/* Компоновка для П-образной столешницы */
+.ushape-polish-layout {
+  display: flex;
+  flex-direction: row;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.ushape-polish-layout > * {
+  flex: 1;
+  min-width: 220px;
 }
 
 /* Опции */
@@ -533,6 +850,7 @@ body {
   border-radius: 16px;
   padding: 20px;
   border: 1px solid #e9ecef;
+  margin-bottom: 20px;
 }
 
 .result-summary p {
@@ -575,7 +893,127 @@ body {
   justify-content: space-between;
 }
 
-/* Мобильная адаптация */
+/* Стили для калькулятора стоимости материала */
+.material-cost-calculator {
+  background: linear-gradient(135deg, #f8f9fa 0%, #fff 100%);
+  border-radius: 20px;
+  padding: 24px;
+  margin-top: 20px;
+  border: 1px solid #e9ecef;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+
+.material-cost-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin-bottom: 20px;
+  text-align: center;
+  padding-bottom: 12px;
+  border-bottom: 2px solid #667eea;
+  display: inline-block;
+  width: 100%;
+}
+
+.material-cost-input-group {
+  margin-bottom: 20px;
+}
+
+.material-cost-input-group label {
+  display: block;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.material-cost-input-group input {
+  width: 100%;
+  padding: 14px 16px;
+  font-size: 16px;
+  border: 2px solid #e0e0e0;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  outline: none;
+  font-family: inherit;
+  background: white;
+}
+
+.material-cost-input-group input:focus {
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.material-cost-input-group input::placeholder {
+  color: #aaa;
+}
+
+.material-cost-result {
+  background: #f0f2f5;
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 20px;
+}
+
+.material-cost-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  font-size: 14px;
+  color: #495057;
+}
+
+.material-cost-row.markup {
+  color: #e67e22;
+  font-weight: 500;
+}
+
+.material-cost-row.total-material {
+  padding-top: 12px;
+  margin-top: 8px;
+  border-top: 1px solid #dee2e6;
+  font-weight: 700;
+  font-size: 16px;
+  color: #1a1a2e;
+}
+
+.material-cost-divider {
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #667eea, #764ba2, transparent);
+  margin: 20px 0;
+}
+
+.material-cost-final-total {
+  background: linear-gradient(135deg, #e8f4f8 0%, #d4eaf0 100%);
+  border-radius: 16px;
+  padding: 20px;
+}
+
+.final-total-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  font-size: 14px;
+  color: #495057;
+}
+
+.final-total-row.grand-total {
+  padding-top: 12px;
+  margin-top: 8px;
+  border-top: 2px solid #667eea;
+  font-size: 18px;
+  font-weight: 800;
+  color: #1a1a2e;
+}
+
+.final-total-row.grand-total span:last-child {
+  color: #e67e22;
+  font-size: 22px;
+}
+
+/* Адаптив для мобильных */
 @media (max-width: 768px) {
   .calculator-container {
     padding: 24px 20px;
@@ -624,6 +1062,10 @@ body {
     padding: 12px;
   }
   
+  .polish-section h4 {
+    font-size: 12px;
+  }
+  
   .radio-group {
     flex-direction: column;
     gap: 10px;
@@ -644,6 +1086,47 @@ body {
   
   .result-summary p.total span {
     font-size: 18px;
+  }
+  
+  .material-cost-calculator {
+    padding: 16px;
+  }
+  
+  .material-cost-title {
+    font-size: 18px;
+  }
+  
+  .final-total-row.grand-total {
+    font-size: 16px;
+  }
+  
+  .final-total-row.grand-total span:last-child {
+    font-size: 18px;
+  }
+  
+  .material-cost-result {
+    padding: 12px;
+  }
+  
+  .material-cost-row {
+    font-size: 12px;
+  }
+  
+  .material-cost-row.total-material {
+    font-size: 14px;
+  }
+  
+  /* Улучшенные стрелки для мобильных */
+  .input-group input[type="number"] {
+    -moz-appearance: spinner !important;
+    appearance: auto !important;
+  }
+  
+  .input-group input[type="number"]::-webkit-inner-spin-button,
+  .input-group input[type="number"]::-webkit-outer-spin-button {
+    opacity: 1 !important;
+    height: 28px !important;
+    width: 20px !important;
   }
 }
 
@@ -709,5 +1192,97 @@ body {
   
   .result-breakdown p {
     font-size: 11px;
+  }
+  
+  .grand-total-amount {
+    font-size: 24px;
+  }
+  
+  .grand-total-banner h3 {
+    font-size: 16px;
+  }
+  
+  /* Ещё более заметные стрелки на маленьких телефонах */
+  .input-group input[type="number"] {
+    font-size: 16px !important;
+  }
+  
+  .input-group input[type="number"]::-webkit-inner-spin-button,
+  .input-group input[type="number"]::-webkit-outer-spin-button {
+    height: 32px !important;
+    width: 24px !important;
+  }
+}
+
+/* Специальные стили для iOS (iPhone/iPad) */
+@supports (-webkit-touch-callout: none) {
+  .input-group input[type="number"] {
+    font-size: 16px;
+  }
+}
+
+
+/* Стили для выбора наценки */
+.markup-selector {
+  background: #f8f9fa;
+  border-radius: 16px;
+  padding: 16px 20px;
+  margin-bottom: 20px;
+  border: 1px solid #e9ecef;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.markup-label {
+  font-weight: 600;
+  color: #333;
+  font-size: 14px;
+}
+
+.markup-options {
+  display: flex;
+  gap: 12px;
+}
+
+.markup-option {
+  padding: 8px 20px;
+  border: 2px solid #e0e0e0;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-weight: 500;
+  font-size: 14px;
+  color: #666;
+  background: white;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.markup-option input[type="radio"] {
+  display: none;
+}
+
+.markup-option:hover {
+  border-color: #667eea;
+}
+
+.markup-option.active {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-color: #667eea;
+  color: white;
+}
+
+@media (max-width: 480px) {
+  .markup-selector {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+  
+  .markup-options {
+    justify-content: center;
   }
 }

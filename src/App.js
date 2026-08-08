@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import './App.css';
+import PolishControls from './PolishControls';
+import MaterialCostCalculator from './MaterialCostCalculator';
 
 function App() {
   const [items, setItems] = useState([
@@ -18,7 +20,16 @@ function App() {
       widthCenter: '',
       lengthRight: '',
       widthRight: '',
-      polishCorners: [],
+      straightPolish: { top: false, bottom: false, left: false, right: false },
+      cornerPolish: {
+        side1: { top: false, bottom: false, left: false, right: false },
+        side2: { top: false, bottom: false, left: false, right: false }
+      },
+      ushapePolish: {
+        left: { top: false, bottom: false, left: false, right: false },
+        center: { top: false, bottom: false, left: false, right: false },
+        right: { top: false, bottom: false, left: false, right: false }
+      },
       hasHob: false, 
       hobType: 'standard', 
       hasSink: false, 
@@ -36,16 +47,19 @@ function App() {
       measurementType: 'standard',
       hasInstallation: false,
       hasDelivery: false,
-      installationArea: ''
+      installationArea: '',
+      hasCutting: false
     }
   ]);
   const [nextId, setNextId] = useState(2);
   const [totalPrice, setTotalPrice] = useState(null);
   const [priceSettingsOpen, setPriceSettingsOpen] = useState(false);
+  const [currentFabricationCost, setCurrentFabricationCost] = useState(0);
+  const [markupPercentage, setMarkupPercentage] = useState(20);
   
   const [prices, setPrices] = useState({
-    cutPerMeter: 10,
-    polishPerMeter: 25,
+    cutPerMeter: 8,
+    polishPerMeter: 20,
     hobStandard: 35,
     hobFlush: 160,
     sinkOvermount: 35,
@@ -92,7 +106,16 @@ function App() {
       widthCenter: '',
       lengthRight: '',
       widthRight: '',
-      polishCorners: [],
+      straightPolish: { top: false, bottom: false, left: false, right: false },
+      cornerPolish: {
+        side1: { top: false, bottom: false, left: false, right: false },
+        side2: { top: false, bottom: false, left: false, right: false }
+      },
+      ushapePolish: {
+        left: { top: false, bottom: false, left: false, right: false },
+        center: { top: false, bottom: false, left: false, right: false },
+        right: { top: false, bottom: false, left: false, right: false }
+      },
       hasHob: false,
       hobType: 'standard',
       hasSink: false,
@@ -110,7 +133,8 @@ function App() {
       measurementType: 'standard',
       hasInstallation: false,
       hasDelivery: false,
-      installationArea: ''
+      installationArea: '',
+      hasCutting: false
     }]);
     setNextId(nextId + 1);
     setTotalPrice(null);
@@ -129,16 +153,71 @@ function App() {
     setTotalPrice(null);
   };
 
-  const togglePolishCorner = (id, cornerId) => {
+  const handleMarkupChange = (value) => {
+    setMarkupPercentage(value);
+    setTotalPrice(null);
+  };
+
+  const incrementExtras = (id) => {
+    setItems(items.map(item => 
+      item.id === id ? { ...item, extrasCount: Math.min((item.extrasCount || 1) + 1, 99) } : item
+    ));
+    setTotalPrice(null);
+  };
+
+  const decrementExtras = (id) => {
+    setItems(items.map(item => 
+      item.id === id ? { ...item, extrasCount: Math.max((item.extrasCount || 1) - 1, 0) } : item
+    ));
+    setTotalPrice(null);
+  };
+
+  const incrementSeam = (id) => {
+    setItems(items.map(item => 
+      item.id === id ? { ...item, seamCount: Math.min((item.seamCount || 1) + 1, 20) } : item
+    ));
+    setTotalPrice(null);
+  };
+
+  const decrementSeam = (id) => {
+    setItems(items.map(item => 
+      item.id === id ? { ...item, seamCount: Math.max((item.seamCount || 1) - 1, 0) } : item
+    ));
+    setTotalPrice(null);
+  };
+
+  const togglePolish = (id, type, side, position) => {
     setItems(items.map(item => {
-      if (item.id === id) {
-        const current = item.polishCorners || [];
-        const newCorners = current.includes(cornerId)
-          ? current.filter(c => c !== cornerId)
-          : [...current, cornerId];
-        return { ...item, polishCorners: newCorners };
+      if (item.id !== id) return item;
+      
+      const newItem = { ...item };
+      
+      if (type === 'straight') {
+        newItem.straightPolish = {
+          ...item.straightPolish,
+          [position]: !item.straightPolish[position]
+        };
+      } 
+      else if (type === 'corner') {
+        newItem.cornerPolish = {
+          ...item.cornerPolish,
+          [side]: {
+            ...item.cornerPolish[side],
+            [position]: !item.cornerPolish[side][position]
+          }
+        };
       }
-      return item;
+      else if (type === 'uShape') {
+        newItem.ushapePolish = {
+          ...item.ushapePolish,
+          [side]: {
+            ...item.ushapePolish[side],
+            [position]: !item.ushapePolish[side][position]
+          }
+        };
+      }
+      
+      return newItem;
     }));
     setTotalPrice(null);
   };
@@ -148,18 +227,21 @@ function App() {
   };
 
   const calculateCornerPerimeter = (length1, width1, length2, width2) => {
-    const perimeter1 = (parseFloat(length1) + parseFloat(width1)) * 2;
-    const perimeter2 = (parseFloat(length2) + parseFloat(width2)) * 2;
-    const overlap = (parseFloat(width1) + parseFloat(width2)) * 2;
-    return perimeter1 + perimeter2 - overlap;
+    const len1 = parseFloat(length1);
+    const wid1 = parseFloat(width1);
+    const len2 = parseFloat(length2);
+    const wid2 = parseFloat(width2);
+    return (len1 + len2) * 2 + wid1 * 2 + wid2 * 2;
   };
 
   const calculateUShapePerimeter = (leftL, leftW, centerL, centerW, rightL, rightW) => {
-    const leftPerimeter = (parseFloat(leftL) + parseFloat(leftW)) * 2;
-    const centerOuter = parseFloat(centerL) * 2;
-    const rightPerimeter = (parseFloat(rightL) + parseFloat(rightW)) * 2;
-    const subtractLeftRight = (parseFloat(leftW) + parseFloat(rightW)) * 2;
-    return leftPerimeter + centerOuter + rightPerimeter - subtractLeftRight;
+    const leftLen = parseFloat(leftL);
+    const leftWid = parseFloat(leftW);
+    const centerLen = parseFloat(centerL);
+    const centerWid = parseFloat(centerW);
+    const rightLen = parseFloat(rightL);
+    const rightWid = parseFloat(rightW);
+    return (leftLen + centerLen + rightLen) * 2 + leftWid * 2 + rightWid * 2;
   };
 
   const calculateCornerArea = (length1, width1, length2, width2) => {
@@ -178,32 +260,40 @@ function App() {
     return (leftArea + centerArea + rightArea - intersectionLeft - intersectionRight) / 1000000;
   };
 
-  const calculatePolishLength = (item, corners) => {
-    let polishLengthM = 0;
-    const hasTop = corners.includes('top');
-    const hasBottom = corners.includes('bottom');
-    const hasLeft = corners.includes('left');
-    const hasRight = corners.includes('right');
+  const calculatePolishLength = (item) => {
+    let totalM = 0;
     
     if (item.type === 'straight') {
+      const polish = item.straightPolish || { top: false, bottom: false, left: false, right: false };
       const len = parseFloat(item.length);
       const wid = parseFloat(item.width);
-      if (hasTop) polishLengthM += len / 1000;
-      if (hasBottom) polishLengthM += len / 1000;
-      if (hasLeft) polishLengthM += wid / 1000;
-      if (hasRight) polishLengthM += wid / 1000;
+      if (polish.top) totalM += len / 1000;
+      if (polish.bottom) totalM += len / 1000;
+      if (polish.left) totalM += wid / 1000;
+      if (polish.right) totalM += wid / 1000;
     } 
     else if (item.type === 'corner') {
+      const polish1 = item.cornerPolish?.side1 || { top: false, bottom: false, left: false, right: false };
+      const polish2 = item.cornerPolish?.side2 || { top: false, bottom: false, left: false, right: false };
       const len1 = parseFloat(item.length1);
       const wid1 = parseFloat(item.width1);
       const len2 = parseFloat(item.length2);
       const wid2 = parseFloat(item.width2);
-      if (hasTop) polishLengthM += (len1 + len2) / 1000;
-      if (hasBottom) polishLengthM += (len1 + len2) / 1000;
-      if (hasLeft) polishLengthM += wid1 / 1000;
-      if (hasRight) polishLengthM += wid2 / 1000;
+      
+      if (polish1.top) totalM += len1 / 1000;
+      if (polish1.bottom) totalM += len1 / 1000;
+      if (polish1.left) totalM += wid1 / 1000;
+      if (polish1.right) totalM += wid1 / 1000;
+      
+      if (polish2.top) totalM += len2 / 1000;
+      if (polish2.bottom) totalM += len2 / 1000;
+      if (polish2.left) totalM += wid2 / 1000;
+      if (polish2.right) totalM += wid2 / 1000;
     }
     else if (item.type === 'uShape') {
+      const polishLeft = item.ushapePolish?.left || { top: false, bottom: false, left: false, right: false };
+      const polishCenter = item.ushapePolish?.center || { top: false, bottom: false, left: false, right: false };
+      const polishRight = item.ushapePolish?.right || { top: false, bottom: false, left: false, right: false };
       const leftL = parseFloat(item.lengthLeft);
       const leftW = parseFloat(item.widthLeft);
       const centerL = parseFloat(item.lengthCenter);
@@ -211,13 +301,23 @@ function App() {
       const rightL = parseFloat(item.lengthRight);
       const rightW = parseFloat(item.widthRight);
       
-      if (hasTop) polishLengthM += (leftL + centerL + rightL) / 1000;
-      if (hasBottom) polishLengthM += (leftL + centerL + rightL) / 1000;
-      if (hasLeft) polishLengthM += leftW / 1000;
-      if (hasRight) polishLengthM += rightW / 1000;
+      if (polishLeft.top) totalM += leftL / 1000;
+      if (polishLeft.bottom) totalM += leftL / 1000;
+      if (polishLeft.left) totalM += leftW / 1000;
+      if (polishLeft.right) totalM += leftW / 1000;
+      
+      if (polishCenter.top) totalM += centerL / 1000;
+      if (polishCenter.bottom) totalM += centerL / 1000;
+      if (polishCenter.left) totalM += centerW / 1000;
+      if (polishCenter.right) totalM += centerW / 1000;
+      
+      if (polishRight.top) totalM += rightL / 1000;
+      if (polishRight.bottom) totalM += rightL / 1000;
+      if (polishRight.left) totalM += rightW / 1000;
+      if (polishRight.right) totalM += rightW / 1000;
     }
     
-    return polishLengthM;
+    return totalM;
   };
 
   const getMaxDimension = (item) => {
@@ -244,6 +344,37 @@ function App() {
     }
   };
 
+  const getPolishData = (item) => {
+    if (item.type === 'straight') return item.straightPolish;
+    if (item.type === 'corner') return item.cornerPolish;
+    return item.ushapePolish;
+  };
+
+  const getPolishDimensions = (item) => {
+    if (item.type === 'straight') {
+      return {
+        length: item.length,
+        width: item.width
+      };
+    }
+    if (item.type === 'corner') {
+      return {
+        length1: item.length1,
+        width1: item.width1,
+        length2: item.length2,
+        width2: item.width2
+      };
+    }
+    return {
+      lengthLeft: item.lengthLeft,
+      widthLeft: item.widthLeft,
+      lengthCenter: item.lengthCenter,
+      widthCenter: item.widthCenter,
+      lengthRight: item.lengthRight,
+      widthRight: item.widthRight
+    };
+  };
+
   const calculatePrice = () => {
     let isValid = true;
     let totalPerimeterMm = 0;
@@ -254,8 +385,6 @@ function App() {
       let perimeterMm = 0;
       let area = 0;
       let maxDimension = 0;
-      
-      const polishCorners = item.polishCorners || [];
       
       if (item.type === 'straight') {
         const len = parseFloat(item.length);
@@ -304,7 +433,7 @@ function App() {
       const perimeterM = perimeterMm / 1000;
       const cutPrice = perimeterM * (prices.cutPerMeter || 0);
       
-      const polishLengthM = calculatePolishLength(item, polishCorners);
+      const polishLengthM = calculatePolishLength(item);
       const polishPrice = polishLengthM * (prices.polishPerMeter || 0);
       
       let hobPrice = 0;
@@ -344,6 +473,7 @@ function App() {
       const reinforcementPrice = item.hasReinforcement ? (prices.reinforcement || 0) : 0;
       const extrasPrice = item.hasExtras ? ((prices.extras || 0) * (item.extrasCount || 1)) : 0;
       const seamPrice = item.hasSeam ? ((prices.seam || 0) * (item.seamCount || 1)) : 0;
+      const cuttingPrice = item.hasCutting ? 100 : 0;
       
       const measurementPrice = item.hasMeasurement ? (item.measurementType === 'standard' ? (prices.measurementStandard || 0) : (prices.measurementLarge || 0)) : 0;
       
@@ -351,22 +481,40 @@ function App() {
       if (item.hasInstallation) {
         if (item.type === 'straight') {
           const wid = parseFloat(item.width);
-          installationPrice = area * (wid <= 300 ? prices.installationNarrow : prices.installationStandard);
+          if (wid <= 300) {
+            const lengthM = parseFloat(item.length) / 1000;
+            installationPrice = lengthM * prices.installationNarrow;
+          } else {
+            installationPrice = area * prices.installationStandard;
+          }
         } else if (item.type === 'corner') {
           const wid1 = parseFloat(item.width1);
           const wid2 = parseFloat(item.width2);
           const avgWidth = (wid1 + wid2) / 2;
-          installationPrice = area * (avgWidth <= 300 ? prices.installationNarrow : prices.installationStandard);
+          if (avgWidth <= 300) {
+            const length1M = parseFloat(item.length1) / 1000;
+            const length2M = parseFloat(item.length2) / 1000;
+            installationPrice = (length1M + length2M) * prices.installationNarrow;
+          } else {
+            installationPrice = area * prices.installationStandard;
+          }
         } else {
           const leftW = parseFloat(item.widthLeft);
           const centerW = parseFloat(item.widthCenter);
           const rightW = parseFloat(item.widthRight);
           const avgWidth = (leftW + centerW + rightW) / 3;
-          installationPrice = area * (avgWidth <= 300 ? prices.installationNarrow : prices.installationStandard);
+          if (avgWidth <= 300) {
+            const leftLM = parseFloat(item.lengthLeft) / 1000;
+            const centerLM = parseFloat(item.lengthCenter) / 1000;
+            const rightLM = parseFloat(item.lengthRight) / 1000;
+            installationPrice = (leftLM + centerLM + rightLM) * prices.installationNarrow;
+          } else {
+            installationPrice = area * prices.installationStandard;
+          }
         }
       }
       
-      const fabricationCost = cutPrice + polishPrice + hobPrice + sinkPrice + reinforcementPrice + extrasPrice + seamPrice;
+      const fabricationCost = cutPrice + polishPrice + hobPrice + sinkPrice + reinforcementPrice + extrasPrice + seamPrice + cuttingPrice;
       
       let h40Price = 0;
       if (item.hasH40) {
@@ -417,7 +565,6 @@ function App() {
         perimeter: perimeterMm,
         cutPrice,
         polishPrice,
-        polishCorners,
         polishLengthM,
         hasHob: item.hasHob,
         hobPrice,
@@ -435,6 +582,8 @@ function App() {
         hasSeam: item.hasSeam,
         seamCount: item.seamCount || 1,
         seamPrice,
+        hasCutting: item.hasCutting,
+        cuttingPrice: cuttingPrice,
         hasH40: item.hasH40,
         h40Price,
         hasSimpleBoard: item.hasSimpleBoard,
@@ -459,6 +608,8 @@ function App() {
     }
     
     const total = details.reduce((sum, d) => sum + d.itemTotal, 0);
+    const totalFabricationCost = details.reduce((sum, d) => sum + d.itemTotal, 0);
+    setCurrentFabricationCost(totalFabricationCost);
     
     setTotalPrice({
       total,
@@ -470,6 +621,7 @@ function App() {
       reinforcementTotal: details.reduce((sum, d) => sum + d.reinforcementPrice, 0),
       extrasTotal: details.reduce((sum, d) => sum + d.extrasPrice, 0),
       seamTotal: details.reduce((sum, d) => sum + d.seamPrice, 0),
+      cuttingTotal: details.reduce((sum, d) => sum + d.cuttingPrice, 0),
       h40Total: details.reduce((sum, d) => sum + d.h40Price, 0),
       simpleBoardTotal: details.reduce((sum, d) => sum + d.simpleBoardPrice, 0),
       measurementTotal: details.reduce((sum, d) => sum + d.measurementPrice, 0),
@@ -481,21 +633,10 @@ function App() {
     });
   };
 
-  const getPolishCornersText = (corners) => {
-    if (!corners || corners.length === 0) return 'не выбрано';
-    const labels = {
-      top: 'верхняя',
-      bottom: 'нижняя',
-      left: 'левая',
-      right: 'правая'
-    };
-    return corners.map(c => labels[c]).join(', ');
-  };
-
   return (
     <div className="App">
       <div className="calculator-container">
-        <h1 className="title">Калькулятор распила и полировки</h1>
+        <h1 className="title">Калькулятор расчета изделий</h1>
         
         <div className="price-settings-wrapper">
           <button className="price-settings-toggle" onClick={() => setPriceSettingsOpen(!priceSettingsOpen)}>
@@ -541,7 +682,7 @@ function App() {
                 <div className="price-row"><label>Замер обычный ($)</label><input type="number" value={prices.measurementStandard} onChange={(e) => updatePrice('measurementStandard', e.target.value)} step="5" min="0" className="price-input" /></div>
                 <div className="price-row"><label>Замер большой ($)</label><input type="number" value={prices.measurementLarge} onChange={(e) => updatePrice('measurementLarge', e.target.value)} step="5" min="0" className="price-input" /></div>
                 <div className="price-row"><label>Монтаж столешницы ($/м²)</label><input type="number" value={prices.installationStandard} onChange={(e) => updatePrice('installationStandard', e.target.value)} step="5" min="0" className="price-input" /></div>
-                <div className="price-row"><label>Монтаж (ширина до 300 мм) ($/м²)</label><input type="number" value={prices.installationNarrow} onChange={(e) => updatePrice('installationNarrow', e.target.value)} step="5" min="0" className="price-input" /></div>
+                <div className="price-row"><label>Монтаж (ширина до 300 мм) ($/пог.м)</label><input type="number" value={prices.installationNarrow} onChange={(e) => updatePrice('installationNarrow', e.target.value)} step="5" min="0" className="price-input" /></div>
               </div>
 
               <div className="price-category">
@@ -553,19 +694,51 @@ function App() {
           )}
         </div>
         
+        <div className="markup-selector">
+          <span className="markup-label">Наценка на материал:</span>
+          <div className="markup-options">
+            <label className={`markup-option ${markupPercentage === 10 ? 'active' : ''}`}>
+              <input 
+                type="radio" 
+                name="markup" 
+                value="10" 
+                checked={markupPercentage === 10} 
+                onChange={() => handleMarkupChange(10)} 
+              />
+              10%
+            </label>
+            <label className={`markup-option ${markupPercentage === 20 ? 'active' : ''}`}>
+              <input 
+                type="radio" 
+                name="markup" 
+                value="20" 
+                checked={markupPercentage === 20} 
+                onChange={() => handleMarkupChange(20)} 
+              />
+              20%
+            </label>
+          </div>
+        </div>
+        
         {items.map((item) => {
-          const polishCorners = item.polishCorners || [];
           let area = 0;
           let installationPricePreview = 0;
           let maxDimension = 0;
+          let polishLengthM = 0;
           
           if (item.type === 'straight') {
             area = (parseFloat(item.length) * parseFloat(item.width)) / 1000000;
             if (item.hasInstallation) {
               const wid = parseFloat(item.width);
-              installationPricePreview = area * (wid <= 300 ? prices.installationNarrow : prices.installationStandard);
+              if (wid <= 300) {
+                const lengthM = parseFloat(item.length) / 1000;
+                installationPricePreview = lengthM * prices.installationNarrow;
+              } else {
+                installationPricePreview = area * prices.installationStandard;
+              }
             }
             maxDimension = getMaxDimension(item);
+            polishLengthM = calculatePolishLength(item);
           } 
           else if (item.type === 'corner') {
             area = calculateCornerArea(item.length1, item.width1, item.length2, item.width2);
@@ -573,9 +746,16 @@ function App() {
               const wid1 = parseFloat(item.width1);
               const wid2 = parseFloat(item.width2);
               const avgWidth = (wid1 + wid2) / 2;
-              installationPricePreview = area * (avgWidth <= 300 ? prices.installationNarrow : prices.installationStandard);
+              if (avgWidth <= 300) {
+                const length1M = parseFloat(item.length1) / 1000;
+                const length2M = parseFloat(item.length2) / 1000;
+                installationPricePreview = (length1M + length2M) * prices.installationNarrow;
+              } else {
+                installationPricePreview = area * prices.installationStandard;
+              }
             }
             maxDimension = getMaxDimension(item);
+            polishLengthM = calculatePolishLength(item);
           } 
           else {
             area = calculateUShapeArea(item.lengthLeft, item.widthLeft, item.lengthCenter, item.widthCenter, item.lengthRight, item.widthRight);
@@ -584,9 +764,17 @@ function App() {
               const centerW = parseFloat(item.widthCenter);
               const rightW = parseFloat(item.widthRight);
               const avgWidth = (leftW + centerW + rightW) / 3;
-              installationPricePreview = area * (avgWidth <= 300 ? prices.installationNarrow : prices.installationStandard);
+              if (avgWidth <= 300) {
+                const leftLM = parseFloat(item.lengthLeft) / 1000;
+                const centerLM = parseFloat(item.lengthCenter) / 1000;
+                const rightLM = parseFloat(item.lengthRight) / 1000;
+                installationPricePreview = (leftLM + centerLM + rightLM) * prices.installationNarrow;
+              } else {
+                installationPricePreview = area * prices.installationStandard;
+              }
             }
             maxDimension = getMaxDimension(item);
+            polishLengthM = calculatePolishLength(item);
           }
           
           return (
@@ -651,17 +839,17 @@ function App() {
               
               <div className="input-group">
                 <label>Полировка сторон</label>
-                <div className="polish-visual">
-                  <div className="polish-rectangle">
-                    <button type="button" className={`polish-side top ${polishCorners.includes('top') ? 'active' : ''}`} onClick={() => togglePolishCorner(item.id, 'top')}>Верхняя сторона</button>
-                    <div className="polish-middle">
-                      <button type="button" className={`polish-side left ${polishCorners.includes('left') ? 'active' : ''}`} onClick={() => togglePolishCorner(item.id, 'left')}>Левая</button>
-                      <div className="polish-center">Изделие</div>
-                      <button type="button" className={`polish-side right ${polishCorners.includes('right') ? 'active' : ''}`} onClick={() => togglePolishCorner(item.id, 'right')}>Правая</button>
-                    </div>
-                    <button type="button" className={`polish-side bottom ${polishCorners.includes('bottom') ? 'active' : ''}`} onClick={() => togglePolishCorner(item.id, 'bottom')}>Нижняя сторона</button>
+                <PolishControls 
+                  type={item.type}
+                  data={getPolishData(item)}
+                  onToggle={(type, side, position) => togglePolish(item.id, type, side, position)}
+                  dimensions={getPolishDimensions(item)}
+                />
+                {polishLengthM > 0 && (
+                  <div className="polish-info">
+                    <strong>Длина полировки:</strong> {polishLengthM.toFixed(2)} м × {prices.polishPerMeter} $/м = {(polishLengthM * prices.polishPerMeter).toFixed(2)} $
                   </div>
-                </div>
+                )}
               </div>
 
               <div className="input-group option-group">
@@ -699,9 +887,20 @@ function App() {
                 <label className="checkbox-label"><input type="checkbox" checked={item.hasExtras} onChange={(e) => updateItem(item.id, 'hasExtras', e.target.checked)} /><span>Углы / Радиусы / Уши / Отверстия / Розетки ({prices.extras}$/шт)</span></label>
                 {item.hasExtras && (
                   <div className="extras-count">
-                    <label>Количество:</label>
-                    <input type="number" min="1" max="99" value={item.extrasCount} onChange={(e) => updateItem(item.id, 'extrasCount', parseInt(e.target.value) || 1)} className="extras-input" />
-                    <span className="extras-total"> = {(prices.extras || 0) * (item.extrasCount || 1)} $</span>
+                    <button className="qty-btn" onClick={() => decrementExtras(item.id)} disabled={item.extrasCount <= 0}>−</button>
+                    <input 
+                      type="number" 
+                      min="0" 
+                      max="99" 
+                      value={item.extrasCount} 
+                      onChange={(e) => {
+                        const val = parseInt(e.target.value) || 0;
+                        updateItem(item.id, 'extrasCount', Math.min(Math.max(val, 0), 99));
+                      }} 
+                      className="extras-input" 
+                    />
+                    <button className="qty-btn" onClick={() => incrementExtras(item.id)} disabled={item.extrasCount >= 99}>+</button>
+                    <span className="extras-total"> = {(prices.extras || 0) * (item.extrasCount || 0)} $</span>
                   </div>
                 )}
               </div>
@@ -710,11 +909,33 @@ function App() {
                 <label className="checkbox-label"><input type="checkbox" checked={item.hasSeam} onChange={(e) => updateItem(item.id, 'hasSeam', e.target.checked)} /><span>Шов / Подгонка ({prices.seam}$/шт)</span></label>
                 {item.hasSeam && (
                   <div className="extras-count">
-                    <label>Количество швов:</label>
-                    <input type="number" min="1" max="20" value={item.seamCount} onChange={(e) => updateItem(item.id, 'seamCount', parseInt(e.target.value) || 1)} className="extras-input" />
-                    <span className="extras-total"> = {(prices.seam || 0) * (item.seamCount || 1)} $</span>
+                    <button className="qty-btn" onClick={() => decrementSeam(item.id)} disabled={item.seamCount <= 0}>−</button>
+                    <input 
+                      type="number" 
+                      min="0" 
+                      max="20" 
+                      value={item.seamCount} 
+                      onChange={(e) => {
+                        const val = parseInt(e.target.value) || 0;
+                        updateItem(item.id, 'seamCount', Math.min(Math.max(val, 0), 20));
+                      }} 
+                      className="extras-input" 
+                    />
+                    <button className="qty-btn" onClick={() => incrementSeam(item.id)} disabled={item.seamCount >= 20}>+</button>
+                    <span className="extras-total"> = {(prices.seam || 0) * (item.seamCount || 0)} $</span>
                   </div>
                 )}
+              </div>
+
+              <div className="input-group option-group">
+                <label className="checkbox-label">
+                  <input 
+                    type="checkbox" 
+                    checked={item.hasCutting} 
+                    onChange={(e) => updateItem(item.id, 'hasCutting', e.target.checked)} 
+                  />
+                  <span>Раскрой (100$)</span>
+                </label>
               </div>
 
               <div className="input-group option-group">
@@ -748,6 +969,9 @@ function App() {
                   <div className="installation-info" style={{ marginTop: 10 }}>
                     <p>Площадь: <strong>{area.toFixed(3)} м²</strong></p>
                     <p>Стоимость монтажа: <strong>{installationPricePreview.toFixed(2)} $</strong></p>
+                    {item.type === 'straight' && parseFloat(item.width) <= 300 && (
+                      <p className="installation-note">* рассчитано по погонным метрам (ширина до 300 мм)</p>
+                    )}
                   </div>
                 )}
               </div>
@@ -769,26 +993,34 @@ function App() {
         <button className="calculate-btn" onClick={calculatePrice}>Рассчитать стоимость</button>
         
         {totalPrice !== null && (
-          <div className="result">
-            <div className="result-summary">
-              <p>Общая стоимость: <span>{totalPrice.total.toFixed(2)} $</span></p>
-              <div className="result-breakdown">
-                <p>Распил: <span>{totalPrice.cutTotal.toFixed(2)} $</span></p>
-                <p>Полировка: <span>{totalPrice.polishTotal.toFixed(2)} $</span></p>
-                {totalPrice.hobTotal > 0 && <p>Варочные панели: <span>{totalPrice.hobTotal.toFixed(2)} $</span></p>}
-                {totalPrice.sinkTotal > 0 && <p>Вырезы под мойки: <span>{totalPrice.sinkTotal.toFixed(2)} $</span></p>}
-                {totalPrice.sinkInstallTotal > 0 && <p>Монтаж моек: <span>{totalPrice.sinkInstallTotal.toFixed(2)} $</span></p>}
-                {totalPrice.reinforcementTotal > 0 && <p>Усиление: <span>{totalPrice.reinforcementTotal.toFixed(2)} $</span></p>}
-                {totalPrice.extrasTotal > 0 && <p>Доп. вырезы: <span>{totalPrice.extrasTotal.toFixed(2)} $</span></p>}
-                {totalPrice.seamTotal > 0 && <p>Шов/подгонка: <span>{totalPrice.seamTotal.toFixed(2)} $</span></p>}
-                {totalPrice.h40Total > 0 && <p>H-40: <span>{totalPrice.h40Total.toFixed(2)} $</span></p>}
-                {totalPrice.simpleBoardTotal > 0 && <p>Простой борт: <span>{totalPrice.simpleBoardTotal.toFixed(2)} $</span></p>}
-                {totalPrice.measurementTotal > 0 && <p>Замер: <span>{totalPrice.measurementTotal.toFixed(2)} $</span></p>}
-                {totalPrice.installationTotal > 0 && <p>Монтаж: <span>{totalPrice.installationTotal.toFixed(2)} $</span></p>}
-                {totalPrice.deliveryTotal > 0 && <p>Доставка: <span>{totalPrice.deliveryTotal.toFixed(2)} $</span></p>}
+          <>
+            <div className="result">
+              <div className="result-summary">
+                <p>Общая стоимость: <span>{totalPrice.total.toFixed(2)} $</span></p>
+                <div className="result-breakdown">
+                  <p>Распил: <span>{totalPrice.cutTotal.toFixed(2)} $</span></p>
+                  <p>Полировка: <span>{totalPrice.polishTotal.toFixed(2)} $</span></p>
+                  {totalPrice.hobTotal > 0 && <p>Варочные панели: <span>{totalPrice.hobTotal.toFixed(2)} $</span></p>}
+                  {totalPrice.sinkTotal > 0 && <p>Вырезы под мойки: <span>{totalPrice.sinkTotal.toFixed(2)} $</span></p>}
+                  {totalPrice.sinkInstallTotal > 0 && <p>Монтаж моек: <span>{totalPrice.sinkInstallTotal.toFixed(2)} $</span></p>}
+                  {totalPrice.reinforcementTotal > 0 && <p>Усиление: <span>{totalPrice.reinforcementTotal.toFixed(2)} $</span></p>}
+                  {totalPrice.extrasTotal > 0 && <p>Доп. вырезы: <span>{totalPrice.extrasTotal.toFixed(2)} $</span></p>}
+                  {totalPrice.seamTotal > 0 && <p>Шов/подгонка: <span>{totalPrice.seamTotal.toFixed(2)} $</span></p>}
+                  {totalPrice.cuttingTotal > 0 && <p>Раскрой: <span>{totalPrice.cuttingTotal.toFixed(2)} $</span></p>}
+                  {totalPrice.h40Total > 0 && <p>H-40: <span>{totalPrice.h40Total.toFixed(2)} $</span></p>}
+                  {totalPrice.simpleBoardTotal > 0 && <p>Простой борт: <span>{totalPrice.simpleBoardTotal.toFixed(2)} $</span></p>}
+                  {totalPrice.measurementTotal > 0 && <p>Замер: <span>{totalPrice.measurementTotal.toFixed(2)} $</span></p>}
+                  {totalPrice.installationTotal > 0 && <p>Монтаж: <span>{totalPrice.installationTotal.toFixed(2)} $</span></p>}
+                  {totalPrice.deliveryTotal > 0 && <p>Доставка: <span>{totalPrice.deliveryTotal.toFixed(2)} $</span></p>}
+                </div>
               </div>
             </div>
-          </div>
+            
+            <MaterialCostCalculator 
+              fabricationCost={currentFabricationCost || 0}
+              markupPercentage={markupPercentage}
+            />
+          </>
         )}
       </div>
     </div>
